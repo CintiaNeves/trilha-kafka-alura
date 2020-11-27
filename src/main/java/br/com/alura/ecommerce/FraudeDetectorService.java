@@ -2,6 +2,8 @@ package br.com.alura.ecommerce;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
+import java.util.HashMap;
+
 public class FraudeDetectorService {
 
 	public static void main(String[] args) {
@@ -9,7 +11,10 @@ public class FraudeDetectorService {
 		FraudeDetectorService fraudeService = new FraudeDetectorService();
 		
 		try(KafkaService<Order> service = new KafkaService<Order>(FraudeDetectorService.class.getSimpleName(),
-				"ECOMMERCE_NEW_ORDER", fraudeService::parse, Order.class)){
+				"ECOMMERCE_NEW_ORDER",
+				fraudeService::parse,
+				Order.class,
+				new HashMap<>())){
 			service.run();
 		}
 	}
