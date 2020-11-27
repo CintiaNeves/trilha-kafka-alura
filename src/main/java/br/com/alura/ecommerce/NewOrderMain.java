@@ -15,11 +15,11 @@ public class NewOrderMain {
 					UUID userId = UUID.randomUUID();
 					UUID orderId = UUID.randomUUID();
 					
-					BigDecimal amount = new BigDecimal(Math.random() * 5000 + 1);
+					BigDecimal amount = BigDecimal.valueOf(Math.random() * 5000 + 1);
 					Order order = new Order(userId.toString(), orderId.toString(), amount);
 					
 					String body = "Thank you for your order! We are processing your order!";
-					String subject = "I dont know yet.";
+					String subject = "I don't know yet.";
 					
 					Email email = new Email(subject, body);
 
