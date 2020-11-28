@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>service-fraud-detector</artifactId>
+    <artifactId>service-users</artifactId>
     <build>
         <plugins>
             <plugin>
@@ -22,7 +22,14 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.32.3.2</version>
+        </dependency>
         <dependency>
             <groupId>br.com.alura</groupId>
             <artifactId>common-kafka</artifactId>

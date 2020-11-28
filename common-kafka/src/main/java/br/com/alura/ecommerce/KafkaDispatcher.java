@@ -28,7 +28,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 		return properties;
 	}
 
-	 void send(String topic, UUID key, T value) throws InterruptedException, ExecutionException {
+	 void send(String topic, String key, T value) throws InterruptedException, ExecutionException {
 		
 		ProducerRecord<String, T> record = new ProducerRecord<>(topic, key.toString(), value);
 		Callback callback = (data, ex)->{

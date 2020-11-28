@@ -23,10 +23,10 @@ public class NewOrderMain {
 					
 					Email email = new Email(subject, body);
 
-					orderDispatcher.send("ECOMMERCE_NEW_ORDER", userId, order);
+					orderDispatcher.send("ECOMMERCE_NEW_ORDER", userId.toString(), order);
 
 					
-					emailDispatcher.send("ECOMMERCE_SEND_EMAIL", userId, email);
+					emailDispatcher.send("ECOMMERCE_SEND_EMAIL", userId.toString(), email);
 				}
 			}
 		}
