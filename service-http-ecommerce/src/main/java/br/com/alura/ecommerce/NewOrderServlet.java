@@ -1,11 +1,9 @@
 package br.com.alura.ecommerce;
 
-import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.eclipse.jetty.servlet.Source;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -14,29 +12,40 @@ import java.util.concurrent.ExecutionException;
 
 public class NewOrderServlet extends HttpServlet {
 
+    private final KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<>();
+    private final KafkaDispatcher<Email> emailDispatcher = new KafkaDispatcher<>();
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        orderDispatcher.close();
+        emailDispatcher.close();
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try (KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<>()) {
-            try (KafkaDispatcher<Email> emailDispatcher = new KafkaDispatcher<>()) {
-                try {
-                    var orderId = UUID.randomUUID();
-                    var amount = BigDecimal.valueOf(Math.random() * 5000 + 1);
-                    var email = Math.random() + "@email.com";
-                    var order = new Order(orderId.toString(), amount, email);
 
-                    String body = "Thank you for your order! We are processing your order!";
-                    String subject = "I don't know yet.";
+        try {
+            var email = req.getParameter("email");
+            var orderId = UUID.randomUUID();
+            var amount = new BigDecimal(req.getParameter("amount"));
 
-                    Email emailCode = new Email(subject, body);
+            var order = new Order(orderId.toString(), amount, email);
+            orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, order);
 
-                    orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, order);
-                    emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, emailCode);
-                } catch (InterruptedException e) {
-                    throw new ServletException(e);
-                } catch (ExecutionException e) {
-                    throw new ServletException(e);
-                }
-            }
+            String body = "Thank you for your order! We are processing your order!";
+            String subject = "I don't know yet.";
+
+            Email emailCode = new Email(subject, body);
+            emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, emailCode);
+
+            System.out.println("New order sent successfully");
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.getWriter().println("New order sent.");
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ServletException(e);
         }
+
     }
 }
