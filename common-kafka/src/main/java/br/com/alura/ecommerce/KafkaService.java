@@ -1,5 +1,11 @@
 package br.com.alura.ecommerce;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Collections;
@@ -9,15 +15,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-
 class KafkaService<T> implements Closeable{
 
-	private final KafkaConsumer<String, T> consumer;
+	private final KafkaConsumer<String, Message<T>> consumer;
 	private final ConsumerFunction<T> parse;
 
 	KafkaService(String groupId, String topic, ConsumerFunction<T> parse, Class<T> type, Map<String, String> properties) {
@@ -39,12 +39,12 @@ class KafkaService<T> implements Closeable{
 
 	void run() {
 		while (true) {
-			ConsumerRecords<String, T> records = consumer.poll(Duration.ofMillis(100));
+			ConsumerRecords<String, Message<T>> records = consumer.poll(Duration.ofMillis(100));
 
 			if (!records.isEmpty()) {
 				
 				System.out.println("Encontrei " + records.count() + "registros");
-				for (ConsumerRecord<String, T> record : records) {
+				for (ConsumerRecord<String, Message<T>> record : records) {
 					try {
 						parse.consume(record);
 					} catch (ExecutionException e) {
@@ -67,7 +67,6 @@ class KafkaService<T> implements Closeable{
 		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName());
 		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		properties.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
-		properties.setProperty(GsonDeserializer.TYPE_CONFIG, type.getName());
 		properties.putAll(overrideProperties);
 		return properties;
 	}

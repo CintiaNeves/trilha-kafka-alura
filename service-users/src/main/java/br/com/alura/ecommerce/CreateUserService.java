@@ -6,14 +6,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-public class CrateUserService {
+public class CreateUserService {
 
     private final Connection connection;
 
-    CrateUserService() throws SQLException {
+    CreateUserService() throws SQLException {
         String url = "jdbc:sqlite:target/users_database.db";
         this.connection = DriverManager.getConnection(url);
 
@@ -27,14 +27,12 @@ public class CrateUserService {
     }
 
     public static void main(String[] args) throws SQLException {
-
-        var createUserService = new CrateUserService();
-
-        try(KafkaService<Order> service = new KafkaService<>(CrateUserService.class.getSimpleName(),
+        var createUserService = new CreateUserService();
+        try (var service = new KafkaService(CreateUserService.class.getSimpleName(),
                 "ECOMMERCE_NEW_ORDER",
                 createUserService::parse,
                 Order.class,
-                new HashMap<>())){
+                Map.of())) {
             service.run();
         }
     }
